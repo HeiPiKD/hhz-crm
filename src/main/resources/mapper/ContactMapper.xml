@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.coco.hhz_crm_plus.mapper.ContactMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="ContactMap" type="com.coco.hhz_crm_plus.entity.Contact">
+        <id column="contact_id" property="contactId" />
+        <result column="way" property="way" />
+        <result column="content" property="content" />
+        <result column="customer_id" property="customerId" />
+        <result column="emp_id" property="empId" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <result column="is_del" property="isDel" />
+        <association property="customer" javaType="com.coco.hhz_crm_plus.entity.Customer" resultMap="CustomerMap"/>
+    </resultMap>
+    <resultMap id="CustomerMap" type="com.coco.hhz_crm_plus.entity.Customer">
+        <id column="customer_id" property="customerId" />
+        <result column="customer_name" property="customerName" />
+        <result column="sex" property="sex" />
+        <result column="tel_phone" property="telPhone" />
+        <result column="company" property="company" />
+        <result column="address" property="address" />
+        <result column="emp_id" property="empId" />
+        <result column="is_Orders" property="isOrders" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <result column="is_del" property="isDel" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+       select cm.customer_id,cm.customer_name,cn.*  from contact cn LEFT JOIN customer cm ON cm.customer_id=cn.customer_id
+    </sql>
+    <select id="listCmC" resultMap="ContactMap" parameterType="Integer">
+        <include refid="Base_Column_List" />
+        WHERE cn.is_del=0 and cn.emp_id=#{empId}
+    </select>
+
+</mapper>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.coco.hhz_crm_plus.mapper.RoleMapper">
+    <resultMap id="BaseResultMap" type="com.coco.hhz_crm_plus.entity.Role">
+        <id column="role_id" jdbcType="INTEGER" property="roleId" />
+        <result column="role_name" jdbcType="VARCHAR" property="roleName" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="is_del" jdbcType="INTEGER" property="isDel" />
+    </resultMap>
+    <sql id="Base_Column_List">
+    role_id, role_name, create_time, update_time, is_del
+  </sql>
+
+    <select id="selectList" resultMap="BaseResultMap">
+        select * from role where is_del =0
+    </select>
+
+
+</mapper>

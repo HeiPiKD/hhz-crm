@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html class="x-admin-sm"  xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-X-admin2.1</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+    <link rel="stylesheet" href="/static/css/font.css">
+    <link rel="stylesheet" href="/static/css/xadmin.css">
+    <script type="text/javascript" src="/static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/static/js/xadmin.js"></script>
+    <script type="text/javascript" src="/static/js/cookie.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div class="x-nav">
+      <span class="layui-breadcrumb">
+        <a href="">首页</a>
+        <a href="">员工管理</a>
+        <a>
+          <cite>员工列表</cite></a>
+      </span>
+    <a class="layui-btn layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right" href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:30px">ဂ</i></a>
+</div>
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so">
+            <input type="text" name="empName"  placeholder="请输入用户名" autocomplete="off" class="layui-input">
+            <button class="layui-btn"  lay-submit="" lay-filter="sreach"><i class="layui-icon">&#xe615;</i></button>
+        </form>
+    </div>
+
+    <table class="layui-table" id="valueTable" lay-filter="studentManage">
+
+
+    </table>
+
+
+</div>
+<script type="text/html" id="toolbar">
+    <xblock>
+
+        <a class="layui-btn layui-btn-mini" lay-event="add"><i class="layui-icon"></i>添加</a>
+
+    </xblock>
+</script>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-mini" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-mini layui-btn-danger" lay-event="del">删除</a>
+
+</script>
+<script>
+    layui.use('laydate', function(){
+        var laydate = layui.laydate;
+
+        //执行一个laydate实例
+        laydate.render({
+            elem: '#start' //指定元素
+        });
+
+        //执行一个laydate实例
+        laydate.render({
+            elem: '#end' //指定元素
+        });
+    });
+
+    // 方法渲染
+    // var customerTable;
+    var form;
+    var table;
+    layui.use('table', function () {
+        // $ = layui.jquery, table = layui.table, form = layui.form;
+        // 很重要,初始化
+        table = layui.table, form = layui.form;
+        table.render({
+            elem: '#valueTable'  //要和table标签ID一致
+            //,height: 'full'
+            , url: '/per'
+            , id: 'testReload'
+            , toolbar:'#toolbar'
+            , page: true
+            , limit: 10
+            ,loading: true
+            ,cols: [[
+
+                {type:'numbers',title:'序号',align:'center', width:40} // 自增序号
+                ,{field: 'permId', title: '权限ID', align: 'center', width: 150}
+                , {field: 'permName', title:'权限名称',width: 100, align: 'center'}
+                , {field: 'url', title: 'URL', align: 'center', width: 150}
+                , {field: 'permission', title: '接口', align: 'center', width: 150}
+                ,{fixed: 'right', width: 150, align: 'center', toolbar: '#barDemo', title: '操作'}
+            ]]
+            // 以下不需要可以去掉
+            , done: function (res, curr, count) {
+                //数据表格加载完成时调用此函数
+                //如果是异步请求数据方式，res即为你接口返回的信息。
+                //如果是直接赋值的方式，res即为：{data: [], count: 99} data为当前页数据、count为数据总长度
+                //设置全部数据到全局变量
+                //table_data = res.data;
+                console.log(res.data);
+            }
+        });
+
+        table.on('tool(studentManage)', function(obj){
+            var data = obj.data;
+            if(obj.event === 'detail'){
+                layer.msg('ID：'+ data.id + ' 的查看操作');
+            } else if(obj.event === 'del'){
+                layer.confirm('确定删除吗', function(index){
+                    console.log(data);
+                    $.ajax({
+                        url: "/per/del/"+data.permId,
+                        type: "DELETE",
+                        //data:{"uvid":data.id,"memthodname":"deleteuv","aid":data.aid},
+                        //dataType: "json",
+                        success: function(data){
+                            if(data.state==1){
+                                obj.del();
+                                layer.close(index);
+                                layer.msg("删除成功", {icon: 6});
+                            }else{
+                                layer.msg("删除失败", {icon: 5});
+                            }
+                        }
+
+                    });
+                });
+            } else if(obj.event === 'edit'){
+                editStudent(data);
+            }
+        });
+
+        table.on('toolbar(studentManage)', function(obj){
+            var data = obj.data;
+            if (obj.event === 'add'){
+                addStudent(data)
+            }
+        });
+
+    });
+
+    //userList.js
+    //编辑用户
+    function editStudent(data){
+        var index = layui.layer.open({
+            title : "编辑",
+            type : 2,
+            content : "permission-edit.html",//弹出层页面
+            area: ['400px', '300px'],
+            success : function(layero, index){
+                var body = layui.layer.getChildFrame('body', index);
+                if(data){
+                    // 取到弹出层里的元素，并把编辑的内容放进去
+                    body.find(".permId").val(data.permId)
+                    body.find(".permName").val(data.permName);
+                    body.find(".url").val(data.url);
+                    body.find(".permission").val(data.permission);
+                    // body.find(".classesName").val(data.classesName);
+                    // body.find(".professionName").val(data.professionName);
+                    // body.find(".facultyName").val(data.facultyName);
+                    // 给select标签赋值value。
+                    // body.find("#professionName").val(data.professionId);
+                    // body.find("#classesName").val(data.classesId);
+                    // body.find("#facultyName").val(data.facultyId);
+                    // 根据id选择那一项
+                    // body.find("#professionName option").eq(data.professionId).attr("selected");
+                    // body.find("#classesName option").eq(data.classesId).attr("selected");
+                    // body.find("#facultyName option").eq(data.facultyId).attr("selected");
+
+                    // 记得重新渲染表单
+                    form.render();
+                }
+                setTimeout(function(){
+                    layui.layer.tips('点击此处返回用户列表', '.layui-layer-setwin .layui-layer-close', {
+                        tips: 3
+                    });
+                },500)
+            }
+        })
+        //layui.layer.full(index);//设置弹出层布满窗口
+        //改变窗口大小时，重置弹窗的宽高，防止超出可视区域（如F12调出debug的操作）
+        $(window).on("resize",function(){
+            //layui.layer.full(window.sessionStorage.getItem("index"));
+        })
+    }
+
+    function addStudent(data){
+        var index = layui.layer.open({
+            title : "添加员工",
+            type : 2,
+            content : "permission-add.html",//弹出层页面
+            area: ['400px', '200px'],
+            success : function(layero, index){
+                var body = layui.layer.getChildFrame('body', index);
+                if(data){
+                    // 取到弹出层里的元素，并把编辑的内容放进去
+                    // 给select标签赋值value。
+                    body.find("#classesName").val(data.classesId);
+                    // 根据id选择那一项
+                    // 记得重新渲染表单
+                    form.render();
+                }
+                setTimeout(function(){
+                    layui.layer.tips('点击此处返回权限列表', '.layui-layer-setwin .layui-layer-close', {
+                        tips: 3
+                    });
+                },500)
+            }
+        })
+        //layui.layer.full(index);//设置弹出层布满窗口
+        //改变窗口大小时，重置弹窗的宽高，防止超出可视区域（如F12调出debug的操作）
+        $(window).on("resize",function(){
+            //layui.layer.full(window.sessionStorage.getItem("index"));
+        })
+    }
+
+
+    /*用户-停用*/
+    function member_stop(obj,id){
+        layer.confirm('确认要停用吗？',function(index){
+
+            if($(obj).attr('title')=='启用'){
+
+                //发异步把用户状态进行更改
+                $(obj).attr('title','停用')
+                $(obj).find('i').html('&#xe62f;');
+
+                $(obj).parents("tr").find(".td-status").find('span').addClass('layui-btn-disabled').html('已停用');
+                layer.msg('已停用!',{icon: 5,time:1000});
+
+            }else{
+                $(obj).attr('title','启用')
+                $(obj).find('i').html('&#xe601;');
+
+                $(obj).parents("tr").find(".td-status").find('span').removeClass('layui-btn-disabled').html('已启用');
+                layer.msg('已启用!',{icon: 5,time:1000});
+            }
+
+        });
+    }
+
+    /*用户-删除*/
+    function member_del(obj,id){
+        layer.confirm('确认要删除吗？',function(index){
+            //发异步删除数据
+            $(obj).parents("tr").remove();
+            layer.msg('已删除!',{icon:1,time:1000});
+        });
+    }
+
+
+    function delAll (argument) {
+
+        var data = tableCheck.getData();
+
+        layer.confirm('确认要删除吗？'+data,function(index){
+            //捉到所有被选中的，发异步进行删除
+            layer.msg('删除成功', {icon: 1});
+            $(".layui-form-checked").not('.header').parents('tr').remove();
+        });
+    }
+</script>
+
+</body>
+
+</html>

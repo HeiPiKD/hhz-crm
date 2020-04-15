@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.coco.hhz_crm_plus.mapper.CustomerMapper">
+
+    <!-- 员工映射结果 -->
+    <resultMap id="CustomerResult" type="com.coco.hhz_crm_plus.entity.Customer">
+        <id column="customer_id" property="customerId" />
+        <result column="customer_name" property="customerName" />
+        <result column="sex" property="sex" />
+        <result column="tel_phone" property="telPhone" />
+        <result column="company" property="company" />
+        <result column="address" property="address" />
+        <result column="is_orders" property="isOrders" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <result column="is_del" property="isDel" />
+        <collection  property="employeeList" javaType="java.util.List"  resultMap="EmployeeResult" />
+    </resultMap>
+    <!-- 角色映射结果 -->
+    <resultMap id="EmployeeResult" type="com.coco.hhz_crm_plus.entity.Employee">
+        <id column="emp_id"     property="empId" />
+        <result column="emp_name"      property="empName" />
+        <result column="pwd"      property="pwd" />
+        <result column="salt"      property="salt" />
+        <result column="age"      property="age" />
+        <result column="sex"      property="sex" />
+        <result column="phone"      property="phone"/>
+        <result column="address"      property="address" />
+        <result column="create_time"    property="createTime" />
+        <result column="update_time"    property="updateTime" />
+        <result column="is_del"         property="isDel" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        select distinct c.customer_id,customer_name,c.sex,tel_phone,company,c.address,is_orders,c.create_time,c.update_time,c.is_del,
+        e.emp_id,e.emp_name
+	    from customer c
+	        left join cust_emp ce on c.customer_id = ce.customer_id
+			LEFT JOIN employee e ON e.emp_id = ce.emp_id
+    </sql>
+    <select id="selectList" resultMap="CustomerResult">
+        <include refid="Base_Column_List" />
+        where c.is_del =0
+    </select>
+    <select id="selectByName" parameterType="String" resultMap="CustomerResult">
+        <include refid="Base_Column_List" />
+        where customer_name = #{customerName} and c.is_del =0
+    </select>
+
+</mapper>
